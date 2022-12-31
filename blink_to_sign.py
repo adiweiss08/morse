@@ -59,6 +59,7 @@ def detect_closed_eyes(predictor, frame, face):
     avg_ratio = (left_eye_ratio + right_eye_ratio) / 2
     return avg_ratio > RATIO_OF_BLINKING
 
+
 def main():
     # Initialization the video cap
     cap = cv2.VideoCapture(0)
@@ -139,6 +140,7 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
