@@ -3,7 +3,7 @@ import dlib
 from datetime import datetime
 from builtins import len
 
-import eye_ratio_utils
+from utils import Utils
 from morse_decoder import Morse_decoder
 
 
@@ -24,7 +24,7 @@ def convert_blink_to_sign(blinking_time):
     return True if blinking_time > BLINKING_TIME_DASH_DOT_THRESHOLD else False
 
 # Add dash or dot to the signs_str
-def add_dash_or_dot_to_according_to_blinking_time(blinking_time, signs_str):
+def add_dash_or_dot_according_to_blinking_time(blinking_time, signs_str):
     if convert_blink_to_sign(blinking_time):
         print('------')
         str = signs_str + '-'
@@ -51,9 +51,9 @@ def detect_closed_eyes(predictor, frame, face):
     landmarks = predictor(frame, face)
 
     # The left eye detection
-    left_eye_ratio = eye_ratio_utils.calulate_eye_width_to_height_ratio([36, 37, 38, 39, 40, 41], landmarks)
+    left_eye_ratio = Utils.calulate_eye_width_to_height_ratio([36, 37, 38, 39, 40, 41], landmarks)
     # The right eye detection
-    right_eye_ratio = eye_ratio_utils.calulate_eye_width_to_height_ratio([42, 43, 44, 45, 46, 47], landmarks)
+    right_eye_ratio = Utils.calulate_eye_width_to_height_ratio([42, 43, 44, 45, 46, 47], landmarks)
 
     # The average of the ratio from both eyes
     avg_ratio = (left_eye_ratio + right_eye_ratio) / 2
@@ -110,7 +110,7 @@ def main():
                 blinking_duration = datetime.now() - open_to_close_timestamp
                 eyes_closed = False
 
-                signs_str = add_dash_or_dot_to_according_to_blinking_time(blinking_duration.total_seconds(), signs_str)
+                signs_str = add_dash_or_dot_according_to_blinking_time(blinking_duration.total_seconds(), signs_str)
 
                 close_to_open_timestamp = datetime.now()
 
@@ -139,7 +139,6 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     main()
