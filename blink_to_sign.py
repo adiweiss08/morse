@@ -1,14 +1,13 @@
 import cv2
 import dlib
 from datetime import datetime
-from builtins import len
+from builtins import len, print
 
 from utils import Utils
 from morse_decoder import Morse_decoder
 
-
 # Constants:
-BLINKING_TIME_DASH_DOT_THRESHOLD = 0.9
+BLINKING_TIME_DASH_DOT_THRESHOLD = 0.5
 
 ESC_ASCII_CODE = 27
 
@@ -17,7 +16,8 @@ ESC_ASCII_CODE = 27
 RATIO_OF_BLINKING = 5
 
 # The duration time needed to end a signs (dot or dash) sequence
-SEQ_PAUSE_DURATION = 3
+SEQ_PAUSE_DURATION = 2.5
+
 
 # Convert the blinking time to a dot or a dash. (True means dasg, False means dot)
 def convert_blink_to_sign(blinking_time):
@@ -39,9 +39,10 @@ def calc_sequence(sings_seq, morse_decoder):
     letter = morse_decoder.convert_sign_seq_to_letter(sings_seq)
     if letter:
         print(letter)
-        # Todo: print the letter to the screen
+        return letter
     else:
         print("INVALID SEQUENCE OF DOT AND DASH!")
+        return ""
 
 
 # This method returns True if the detected eyes are closed
@@ -63,9 +64,10 @@ def detect_closed_eyes(predictor, frame, face):
 def main():
     # Initialization the video cap
     cap = cv2.VideoCapture(0)
-    font = cv2.FONT_HERSHEY_SIMPLEX
+    font = cv2.FONT_HERSHEY_TRIPLEX
+
     detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  # the face dot layout
+    predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  # The face dot layout
 
     morse_decoder = Morse_decoder()
 
@@ -78,6 +80,8 @@ def main():
 
     # The following variable indicates that a sign sequence is in process (True means that seq is not done yet)
     seq_in_progress = False
+
+    sentence = ""
 
     # Main loop, running and analyzing the video frames until esc is pressed
     while True:
@@ -100,13 +104,12 @@ def main():
             if detect_closed_eyes(predictor, frame, face):
                 if not eyes_closed:
                     open_to_close_timestamp = datetime.now()
-                cv2.putText(frame, "Blink", (200, 75), font, 2, (100, 100, 100), 3)
+                cv2.putText(frame, "BLINK", (200, 75), font, 2, 0, 2)
                 eyes_closed = True
                 seq_in_progress = True
 
-
-            elif eyes_closed:
             # This case indicates that we have moved from closed eyes to open eyes
+            elif eyes_closed:
                 # Calculate the blinking time (the time that the eyes were closed)
                 blinking_duration = datetime.now() - open_to_close_timestamp
                 eyes_closed = False
@@ -115,19 +118,28 @@ def main():
 
                 close_to_open_timestamp = datetime.now()
 
+            # Eyes are still open
             else:
-                # Eyes are still open
                 time_past_from_last_blink = datetime.now() - close_to_open_timestamp
                 if seq_in_progress and time_past_from_last_blink.total_seconds() > SEQ_PAUSE_DURATION:
-                    print("We have new sequence")
-                    cv2.putText(frame, "New tav", (100, 200), font, 3, (200, 100, 100), 3)
+
+                    cv2.putText(frame, "New Tav", (10, 50), font, 2, 255, 2)
                     seq_in_progress = False
-                    calc_sequence(signs_str, morse_decoder)
+
+                    letter = calc_sequence(signs_str, morse_decoder)
+                    # New line
+                    if (len(sentence) < 15):
+                        sentence += letter
+                    else:
+                        sentence = letter
+
                     signs_str = ""
-                    print("**************************************************")
 
         else:
-            cv2.putText(frame, "No face detected", (150,150) ,font, 1, 225, 3)
+            cv2.putText(frame, "No face detected", (30,150) ,font, 2, 0, 2)
+
+        # Print the letters to the screen
+        cv2.putText(frame, sentence, (10, 450), font, 2, 0, 2)
 
         # Display the frame
         cv2.imshow("Frame", frame)
