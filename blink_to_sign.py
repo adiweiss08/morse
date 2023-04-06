@@ -64,7 +64,11 @@ def detect_closed_eyes(predictor, frame, face):
 def main():
     # Initialization the video cap
     cap = cv2.VideoCapture(0)
-    font = cv2.FONT_HERSHEY_TRIPLEX
+
+    if not cap.isOpened():
+        raise IOError("Cannot open camera!")
+
+    font = cv2.FONT_HERSHEY_DUPLEX
 
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  # The face dot layout
@@ -95,16 +99,25 @@ def main():
         # The detector method get a frame and returns array of faces
         faces = detector(frame)
 
+
+
+        cv2.putText(frame, "'.' = short blink", (5, 40), font, 0.85, (255, 194, 141), 2)
+        cv2.putText(frame, "'-'  = long blink, al least 2 seconds", (5, 80), font, 0.85, (255, 194, 141), 2)
+
+        cv2.putText(frame, "Your text:", (5, 410), font, 1, 0, 1)
+
         # Skip in case there are no faces in the frame
         if len(faces) != 0:
             # For now analyzing only the first face
             face = faces[0]
 
+
+
             # Detect blinking
             if detect_closed_eyes(predictor, frame, face):
                 if not eyes_closed:
                     open_to_close_timestamp = datetime.now()
-                cv2.putText(frame, "BLINK", (200, 75), font, 2, 0, 2)
+                cv2.putText(frame, "BLINK", (250, 200), font, 1.5, (172, 121, 76), 2)
                 eyes_closed = True
                 seq_in_progress = True
 
@@ -123,7 +136,7 @@ def main():
                 time_past_from_last_blink = datetime.now() - close_to_open_timestamp
                 if seq_in_progress and time_past_from_last_blink.total_seconds() > SEQ_PAUSE_DURATION:
 
-                    cv2.putText(frame, "New Tav", (10, 50), font, 2, 255, 2)
+                    cv2.putText(frame, "New Tav", (170, 300), font, 2, (228, 106, 0), 2)
                     seq_in_progress = False
 
                     letter = calc_sequence(signs_str, morse_decoder)
@@ -136,10 +149,10 @@ def main():
                     signs_str = ""
 
         else:
-            cv2.putText(frame, "No face detected", (30,150) ,font, 2, 0, 2)
+            cv2.putText(frame, "No face detected", (45,150) ,font, 2, 0, 2)
 
         # Print the letters to the screen
-        cv2.putText(frame, sentence, (10, 450), font, 2, 0, 2)
+        cv2.putText(frame, sentence, (10, 450), font, 1, (255), 1)
 
         # Display the frame
         cv2.imshow("Frame", frame)
