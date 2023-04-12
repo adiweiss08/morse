@@ -34,9 +34,9 @@ def add_dash_or_dot_according_to_blinking_time(blinking_time, signs_str):
     return str
 
 # Prints the correct character according to the input signs sequence
-def calc_sequence(sings_seq, morse_decoder):
-    print(sings_seq)
-    letter = morse_decoder.convert_sign_seq_to_letter(sings_seq)
+def calc_sequence(signs_str, morse_decoder):
+    print(signs_str)
+    letter = morse_decoder.convert_sign_seq_to_letter(signs_str)
     if letter:
         print(letter)
         return letter
@@ -104,7 +104,7 @@ def main():
         cv2.putText(frame, "'.' = short blink", (5, 40), font, 0.85, (255, 194, 141), 2)
         cv2.putText(frame, "'-'  = long blink, al least 2 seconds", (5, 80), font, 0.85, (255, 194, 141), 2)
 
-        cv2.putText(frame, "Your text:", (5, 410), font, 1, 0, 1)
+        cv2.putText(frame, "Your text:", (5, 315), font, 1, 0, 2)
 
         # Skip in case there are no faces in the frame
         if len(faces) != 0:
@@ -117,7 +117,7 @@ def main():
             if detect_closed_eyes(predictor, frame, face):
                 if not eyes_closed:
                     open_to_close_timestamp = datetime.now()
-                cv2.putText(frame, "BLINK", (250, 200), font, 1.5, (172, 121, 76), 2)
+                cv2.putText(frame, "BLINK", (250, 150), font, 1.5, (172, 121, 76), 2)
                 eyes_closed = True
                 seq_in_progress = True
 
@@ -152,7 +152,7 @@ def main():
             cv2.putText(frame, "No face detected", (45,150) ,font, 2, 0, 2)
 
         # Print the letters to the screen
-        cv2.putText(frame, sentence, (10, 450), font, 1, (255), 1)
+        cv2.putText(frame, sentence, (10, 350), font, 1, (255), 2)
 
         # Display the frame
         cv2.imshow("Frame", frame)
